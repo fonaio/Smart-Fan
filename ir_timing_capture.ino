@@ -3,11 +3,9 @@
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) {
-    IrReceiver.begin(IR_RECIEVE_PIN, ENABLE_LED_FEEDBACK) 
-    //Starts listening for a signal on the dedicated pin. If we recieve a signal, the Arduino LED should flash
-    Serial.println("Setup ready. Press a button on the remote to record IR signal")
-  }
+  while (!Serial) {}  // wait for serial, do nothing inside
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
+  Serial.println("Setup ready. Press a button on the remote to record IR signal");
 }
 
 void loop() { //Taken from IRremote library
@@ -24,4 +22,5 @@ void loop() { //Taken from IRremote library
     IrReceiver.printIRResultRawFormatted(&Serial, true);
 
     IrReceiver.resume();
+ }
 }
