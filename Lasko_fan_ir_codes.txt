@@ -27,9 +27,10 @@ rawIRTimings[144]:
  + 500,-1150 + 500,-1200 +1300
 Duration=154250us
 
+-----
+Author notes: 
+These codes are for the LASKO UDC351 model
 
-
-
-**Notes about data. 
 -  (-1907500) is the idle time before the button press
 - (+1300,- 400), and then signal repeats 6 times
+
