@@ -1,0 +1,58 @@
+#include <Arduino.h>
+#include <IRremoteESP8266.h>
+#include <IRsend.h>
+#include <DHT.h>
+
+#define IR_LED_PIN  1
+#define DHT_PIN     4
+
+const int CHECK_TEMP_INTERVAL = 30000
+const int TARGET_SPEED = 4
+const float TEMP_LOWER_BOUND = 20.0
+const float TEMP_UPPER_BOUND = 22.0
+
+const uint16_t POWER_RAW[] = {
+  1250, 450,
+ 1250, 400, 400, 1250, 1250, 450, 1200, 450,
+ 400, 1200, 450, 1250, 450, 1200, 450, 1200,
+ 450, 1200, 450, 1200, 1300, 7400, 1250, 450,
+ 1200, 450, 400, 1250, 1250, 400, 1250, 450,
+ 350, 1250, 450, 1200, 450, 1250, 450, 1200,
+ 450, 1200, 450, 1200, 1250, 7450, 1250, 400,
+ 1250, 450, 400, 1200, 1250, 450, 1250, 400,
+ 400, 1250, 400, 1250, 450, 1200, 450, 1200,
+ 500, 1150, 500, 1200, 1250, 7400, 1250, 450,
+ 1250, 400, 400, 1250, 1250, 450, 1200, 450,
+ 400, 1200, 450, 1250, 450, 1200, 450, 1200,
+ 450, 1200, 450, 1200, 1250, 7450, 1250, 450,
+ 1200, 450, 400, 1250, 1250, 400, 1250, 400,
+ 400, 1250, 450, 1200, 450, 1200, 500, 1200,
+ 450, 1200, 450, 1200, 1250
+}
+const uint16_t POWER_RAW_LEN = sizeof(POWER_RAW) / sizeof(POWER_RAW[0]);
+
+const uint16_t SPEED_UP_RAW[] = {
+  1250, 450,
+ 1200, 450, 400, 1200, 1300, 400, 1250, 400,
+ 400, 1250, 450, 1200, 450, 1200, 500, 1200,
+ 1250, 400, 400, 1250, 450
+}
+const uint16_t SPEED_UP_RAW_LEN = sizeof(SPEED_UP_RAW) / sizeof(SPEED_UP_RAW[0]);
+
+const uint16_t SPEED_DOWN_RAW[] = {
+1250, 400,
+1250, 450, 400, 1200, 1250, 450, 1250, 400,
+400, 1250, 400, 1250, 450, 1200, 450, 1200,
+450, 1250, 1250, 400, 400
+}
+const uint16_t SPEED_DOWN_RAW_LEN = sizeof(SPEED_DOWN_RAW[]) / sizeof(SPEED_DOWN_RAW[0]);
+
+
+void setup() {
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
