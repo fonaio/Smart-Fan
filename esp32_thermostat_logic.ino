@@ -17,8 +17,14 @@ const float TEMP_TURN_ON = 22.0;
 //variables for cooldown time before checking temperature again
 unsigned long lastToggleTime = 0;
 const unsigned long COOLDOWN_PERIOD = 900000;
-float lastRawTemp = 21.0;
-//[idea: add smoothing? to make sure the temperature doesn't just flicker on/off?? ]
+//float lastRawTemp = 0.0; //removed and replaced with smoothing function
+
+//Smoothing/moving average implementation
+const int FILTER_SAMPLES = 10;     // Avg last 10 readings (100 seconds of data)
+float tempSamples[FILTER_SAMPLES];
+int sampleIndex = 0;
+bool bufferFull = false;
+float lastSmoothedTemp = 21.0;
 
 const uint16_t POWER_RAW[] = {
   1250, 450,
@@ -50,7 +56,33 @@ void sendPower() {
   irsend.sendRaw(POWER_RAW, POWER_RAW_LEN, CARRIER_FREQUENCY);
   delay(200);
 }
- 
+
+float getSmoothedTemperature(float newReading) {
+  tempSamples[sampleIndex] = newReading;
+  sampleIndex++;
+  
+  if (sampleIndex >= FILTER_SAMPLES) {
+    sampleIndex = 0;
+    listFull = true;
+  }
+
+  int currentSampleCount;
+
+  if (bufferFull) {
+    currentSampleCount = FILTER_SAMPLES;
+  }
+  else {
+    currentSampleCount = sampleIndex;
+  }
+  
+  float sum = 0;
+  for (int i = 0; i < currentSampleCount; i++) {
+    sum += tempSamples[i];
+  }
+  
+  return sum / currentSampleCount;
+}
+
 void setup(){
   Serial.begin(115200);
   irsend.begin();
