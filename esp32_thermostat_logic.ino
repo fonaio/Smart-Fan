@@ -1,3 +1,4 @@
+//new logic: 
 #include <Arduino.h> 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -23,7 +24,7 @@ const unsigned long COOLDOWN_PERIOD = 900000;
 const int FILTER_SAMPLES = 10;     // Avg last 10 readings (100 seconds of data)
 float tempSamples[FILTER_SAMPLES];
 int sampleIndex = 0;
-bool bufferFull = false;
+bool listFull = false;
 float lastSmoothedTemp = 21.0;
 
 const uint16_t POWER_RAW[] = {
@@ -56,7 +57,7 @@ void sendPower() {
   irsend.sendRaw(POWER_RAW, POWER_RAW_LEN, CARRIER_FREQUENCY);
   delay(200);
 }
-
+ 
 float getSmoothedTemperature(float newReading) {
   tempSamples[sampleIndex] = newReading;
   sampleIndex++;
@@ -68,7 +69,7 @@ float getSmoothedTemperature(float newReading) {
 
   int currentSampleCount;
 
-  if (bufferFull) {
+  if (listFull) {
     currentSampleCount = FILTER_SAMPLES;
   }
   else {
@@ -80,7 +81,7 @@ float getSmoothedTemperature(float newReading) {
     sum += tempSamples[i];
   }
   
-  return sum / currentSampleCount;
+  return sum / currentSampleCount; //average reading
 }
 
 void setup(){
@@ -88,9 +89,9 @@ void setup(){
   irsend.begin();
   dht.begin();
 
-  float firstReading = dht.readTemperature()
+  float firstReading = dht.readTemperature();
   if (!isnan(firstReading)){
-    lastRawTemp = firstReading;
+    lastSmoothedTemp = firstReading;
   }
 }
 
@@ -101,30 +102,33 @@ void loop() {
   if (currentTime - lastTempCheck >= CHECK_TEMP_INTERVAL) {
     lastTempCheck = currentTime;
 
-    float currentTemp = dht.readTemperature();
-    if (isnan(currentTemp)) {
+    float rawTemp = dht.readTemperature();
+    if (isnan(rawTemp)) {
       Serial.println("Skipping cycle, temperature reading is not a valid number");
       return; 
     }
-    Serial.println("Current Temp: " + String(currentTemp) + "°C"); 
 
+    float currentSmoothedTemp = getSmoothedTemperature(rawTemp);
+
+    Serial.print("Raw: " + String(rawTemp) + "°C | Smoothed: " + String(currentSmoothedTemp) + "°C");
+    
     if (currentTime - lastToggleTime < COOLDOWN_PERIOD) { 
       //makes system stay the way it is for length of COOLDOWN_PERIOD before trying to change states again
       return; 
     }
 
     // Turn fan on
-    if (currentTemp >= TEMP_TURN_ON && lastRawTemp < TEMP_TURN_ON) {
+    if (currentSmoothedTemp >= TEMP_TURN_ON && lastSmoothedTemp < TEMP_TURN_ON) {
       Serial.println("Hot limit crossed. Toggling Power.");
       sendPower();
       lastToggleTime = currentTime; 
     } 
     // Turn fan off
-    else if (currentTemp <= TEMP_TURN_OFF && lastRawTemp > TEMP_TURN_OFF) {
+    else if (currentSmoothedTemp <= TEMP_TURN_OFF && lastSmoothedTemp > TEMP_TURN_OFF) {
       Serial.println("Cold limit crossed. Toggling Power.");
       sendPower();
       lastToggleTime = currentTime;
     }
-    lastRawTemp = currentTemp;
+    lastSmoothedTemp = currentSmoothedTemp;
   }
 }
