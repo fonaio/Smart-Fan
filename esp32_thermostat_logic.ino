@@ -58,7 +58,7 @@ void setup(){
 
   float firstReading = dht.readTemperature()
   if (!isnan(firstReading)){
-    lastRawTemp = firstReading
+    lastRawTemp = firstReading;
   }
 }
 
@@ -70,8 +70,11 @@ void loop() {
     lastTempCheck = currentTime;
 
     float currentTemp = dht.readTemperature();
-
-    Serial.print("Current Temp: " + currentTemp + "°C"); 
+    if (isnan(currentTemp)) {
+      Serial.println("Skipping cycle, temperature reading is not a valid number");
+      return; 
+    }
+    Serial.println("Current Temp: " + String(currentTemp) + "°C"); 
 
     if (currentTime - lastToggleTime < COOLDOWN_PERIOD) { 
       //makes system stay the way it is for length of COOLDOWN_PERIOD before trying to change states again
