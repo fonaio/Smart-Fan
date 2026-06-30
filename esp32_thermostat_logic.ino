@@ -62,18 +62,34 @@ void setup(){
   }
 }
 
-void loop(){
-  //if we recieve an IR signal from the physical remote
-  if (irrev.decode(&results)) {
-    //Speed up signal recieved from physical remote
-    if (resultToSourceCode(&results).indexOf("SPEED_UP_RAW") != 1) {
-      if (currentSpeed == 9){
-        currentSpeed = 1;
-        Serial.println("Physical remote detected. Speed is now: " + currentSpeed);
-      } 
-      else {
-        currentSpeed ++;
-        Serial.println("Physical remote detected. Speed is now: " + currentSpeed);
-      }
+void loop() {
+  unsigned long currentTime = millis();
+
+  static unsigned long lastTempCheck = 0;
+  if (currentTime - lastTempCheck >= CHECK_TEMP_INTERVAL) {
+    lastTempCheck = currentTime;
+
+    float currentTemp = dht.readTemperature();
+
+    Serial.print("Current Temp: " + currentTemp + "°C"); 
+
+    if (currentTime - lastToggleTime < COOLDOWN_PERIOD) { 
+      //makes system stay the way it is for length of COOLDOWN_PERIOD before trying to change states again
+      return; 
+    }
+
+    // Turn fan on
+    if (currentTemp >= TEMP_TURN_ON && lastRawTemp < TEMP_TURN_ON) {
+      Serial.println("Hot limit crossed. Toggling Power.");
+      sendPower();
+      lastToggleTime = currentTime; 
+    } 
+    // Turn fan off
+    else if (currentTemp <= TEMP_TURN_OFF && lastRawTemp > TEMP_TURN_OFF) {
+      Serial.println("Cold limit crossed. Toggling Power.");
+      sendPower();
+      lastToggleTime = currentTime;
+    }
+    lastRawTemp = currentTemp;
   }
 }
